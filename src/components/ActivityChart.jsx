@@ -22,10 +22,10 @@ export default function ActivityChart({ monthly }) {
         layout={{
           height: 400,
           margin: { l: 50, r: 30, t: 30, b: 50 },
-          plot_bgcolor: "#121212",
-          paper_bgcolor: "#121212",
+          plot_bgcolor: "#181818",
+          paper_bgcolor: "#181818",
           font: {
-            color: "#B3B3B3"
+            color: "#FFFFFF"
           }
         }}
       />
