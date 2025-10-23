@@ -1,13 +1,12 @@
 // src/App.jsx
 import React, { useState } from "react";
-import Plot from "react-plotly.js";
 import dayjs from "dayjs";
+import FileUpload from "./components/FileUpload";
+import Dashboard from "./components/Dashboard";
+import Spinner from "./components/Spinner";
+import "./App.css";
 
 const MS_TO_MIN = (ms) => (Number(ms) || 0) / 1000 / 60;
-
-function formatInt(n) {
-  return (typeof n === "number" ? Math.round(n) : n).toLocaleString();
-}
 
 function normalizeRecord(r) {
   const ts = r.ts || r.endTime || r.time || null;
@@ -38,13 +37,13 @@ function normalizeRecord(r) {
 
 export default function App() {
   const [loading, setLoading] = useState(false);
-  const [summary, setSummary] = useState(null);
-  const [monthly, setMonthly] = useState([]);
-  const [topArtists, setTopArtists] = useState([]);
-  const [topSongs, setTopSongs] = useState([]);
+  const [data, setData] = useState(null);
+  const [error, setError] = useState(null);
 
   const handleFiles = async (filesList) => {
     setLoading(true);
+    setData(null);
+    setError(null);
     try {
       const files = Array.from(filesList);
       const texts = await Promise.all(files.map((f) => f.text()));
@@ -61,7 +60,7 @@ export default function App() {
       });
 
       if (!records.length) {
-        alert("No records found in files.");
+        setError("No records found in the uploaded files.");
         setLoading(false);
         return;
       }
@@ -74,13 +73,13 @@ export default function App() {
       const uniqueArtists = new Set(norm.map((r) => r.artist)).size;
       const uniqueSongs = new Set(norm.map((r) => r.track)).size;
 
-      setSummary({
+      const summary = {
         totalPlays,
         totalMinutes: Math.round(totalMinutes),
         totalHours: Math.round(totalMinutes / 60),
         uniqueArtists,
         uniqueSongs,
-      });
+      };
 
       // Monthly aggregation
       const monthlyMap = new Map();
@@ -92,10 +91,9 @@ export default function App() {
         )}`;
         monthlyMap.set(key, (monthlyMap.get(key) || 0) + (r.minutes || 0));
       });
-      const monthlyArr = Array.from(monthlyMap.entries())
+      const monthly = Array.from(monthlyMap.entries())
         .sort((a, b) => new Date(a[0] + "-01") - new Date(b[0] + "-01"))
         .map(([ym, mins]) => ({ month: ym, hours: mins / 60 }));
-      setMonthly(monthlyArr);
 
       // Top artists & songs
       const artistMinutes = new Map();
@@ -115,9 +113,9 @@ export default function App() {
         }
       });
 
-      const topArtistsArr = Array.from(artistMinutes.entries())
+      const topArtists = Array.from(artistMinutes.entries())
         .sort((a, b) => b[1] - a[1])
-        .slice(0, 50)
+        .slice(0, 10)
         .map(([artist, mins]) => ({
           label: `${artist} (First: ${
             artistFirst.has(artist) ? dayjs(artistFirst.get(artist)).format("MMM YYYY") : "N/A"
@@ -125,9 +123,9 @@ export default function App() {
           minutes: Math.round(mins),
         }));
 
-      const topSongsArr = Array.from(songMinutes.entries())
+      const topSongs = Array.from(songMinutes.entries())
         .sort((a, b) => b[1] - a[1])
-        .slice(0, 50)
+        .slice(0, 10)
         .map(([song, mins]) => ({
           label: `${song} (First: ${
             songFirst.has(song) ? dayjs(songFirst.get(song)).format("MMM YYYY") : "N/A"
@@ -135,86 +133,22 @@ export default function App() {
           minutes: Math.round(mins),
         }));
 
-      setTopArtists(topArtistsArr);
-      setTopSongs(topSongsArr);
+      setData({ summary, monthly, topArtists, topSongs });
     } catch (err) {
       console.error(err);
-      alert("Error parsing files.");
+      setError("An error occurred while parsing the files. Please ensure they are valid JSON.");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div style={{ padding: 20, fontFamily: "sans-serif", color: "#222" }}>
+    <div className="container">
       <h1>Spotify Visualizer</h1>
-      <input type="file" multiple accept=".json" onChange={(e) => handleFiles(e.target.files)} />
-      {loading && <p>Parsing files...</p>}
-
-      {summary && (
-        <div>
-          <h2>Summary</h2>
-          <ul>
-            <li>Total plays: {formatInt(summary.totalPlays)}</li>
-            <li>Total minutes: {formatInt(summary.totalMinutes)}</li>
-            <li>Total hours: {formatInt(summary.totalHours)}</li>
-            <li>Unique artists: {formatInt(summary.uniqueArtists)}</li>
-            <li>Unique songs: {formatInt(summary.uniqueSongs)}</li>
-          </ul>
-        </div>
-      )}
-
-      {monthly.length > 0 && (
-        <div>
-          <h2>Listening Over Time (Hours per Month)</h2>
-          <Plot
-            data={[
-              {
-                x: monthly.map((m) => dayjs(m.month + "-01").format("MMM YYYY")),
-                y: monthly.map((m) => parseFloat(m.hours.toFixed(2))),
-                type: "scatter",
-                mode: "lines+markers",
-                line: { shape: "spline", color: "#1DB954" },
-              },
-            ]}
-            layout={{ height: 400, margin: { l: 50, r: 30, t: 30, b: 50 } }}
-          />
-        </div>
-      )}
-
-      {topArtists.length > 0 && (
-        <div>
-          <h2>Top 50 Artists</h2>
-          <Plot
-            data={[
-              {
-                x: topArtists.map((a) => a.minutes),
-                y: topArtists.map((a) => a.label),
-                type: "bar",
-                orientation: "h",
-              },
-            ]}
-            layout={{ height: 50 * topArtists.length, margin: { l: 300 } }}
-          />
-        </div>
-      )}
-
-      {topSongs.length > 0 && (
-        <div>
-          <h2>Top 50 Songs</h2>
-          <Plot
-            data={[
-              {
-                x: topSongs.map((s) => s.minutes),
-                y: topSongs.map((s) => s.label),
-                type: "bar",
-                orientation: "h",
-              },
-            ]}
-            layout={{ height: 50 * topSongs.length, margin: { l: 300 } }}
-          />
-        </div>
-      )}
+      <FileUpload onFiles={handleFiles} disabled={loading} />
+      {loading && <Spinner />}
+      {error && <p className="error">{error}</p>}
+      <Dashboard data={data} />
     </div>
   );
 }
