@@ -7,7 +7,17 @@
   width: 100%;
 }
 
+.file-input-container {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
 input[type="file"] {
+  display: none;
+}
+
+.file-label {
   background-color: #1DB954;
   color: white;
   padding: 0.5rem 1rem;
@@ -19,28 +29,28 @@ input[type="file"] {
 
 h1 {
   color: #1DB954;
+  margin-bottom: 1rem;
 }
 
 h2 {
   color: #FFFFFF;
-}
-
-.error {
-  color: #ff0000;
-  background-color: #ffe5e5;
-  padding: 1rem;
-  border-radius: 0.25rem;
+  margin-bottom: 1rem;
 }
 
 .stats-card {
   background-color: #181818;
-  padding: 1rem;
+  padding: 1.5rem;
   border-radius: 0.5rem;
   text-align: left;
   width: 100%;
 }
 
 .stats-list {
-  list-style-position: inside;
+  list-style: none;
   padding-left: 0;
+  color: #FFFFFF;
+}
+
+.stats-list li {
+  margin-bottom: 0.5rem;
 }

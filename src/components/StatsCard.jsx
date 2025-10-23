@@ -12,11 +12,11 @@ export default function StatsCard({ summary }) {
     <div className="stats-card">
       <h2>Summary</h2>
       <ul className="stats-list">
-        <li>Total plays: {formatInt(summary.totalPlays)}</li>
-        <li>Total minutes: {formatInt(summary.totalMinutes)}</li>
-        <li>Total hours: {formatInt(summary.totalHours)}</li>
-        <li>Unique artists: {formatInt(summary.uniqueArtists)}</li>
-        <li>Unique songs: {formatInt(summary.uniqueSongs)}</li>
+        <li><strong>Total plays:</strong> {formatInt(summary.totalPlays)}</li>
+        <li><strong>Total minutes:</strong> {formatInt(summary.totalMinutes)}</li>
+        <li><strong>Total hours:</strong> {formatInt(summary.totalHours)}</li>
+        <li><strong>Unique artists:</strong> {formatInt(summary.uniqueArtists)}</li>
+        <li><strong>Unique songs:</strong> {formatInt(summary.uniqueSongs)}</li>
       </ul>
     </div>
   );
