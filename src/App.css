@@ -27,6 +27,10 @@ h1 {
   color: #1DB954;
 }
 
+h2 {
+  color: #FFFFFF;
+}
+
 .error {
   color: #ff0000;
   background-color: #ffe5e5;
@@ -35,9 +39,14 @@ h1 {
 }
 
 .stats-card {
+  background-color: #181818;
+  padding: 1rem;
+  border-radius: 0.5rem;
   text-align: left;
+  width: 100%;
 }
 
 .stats-list {
   list-style-position: inside;
+  padding-left: 0;
 }
